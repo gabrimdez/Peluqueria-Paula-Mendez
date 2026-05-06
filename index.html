@@ -508,6 +508,68 @@
   .svc:hover .arrow{ transform: translateX(2px); background: var(--ink); color:#fff; border-color: var(--ink); }
   .svc.featured:hover .arrow{ background:#fff; color: var(--ink); border-color:#fff; }
   .svc-cta .arrow svg{ width:14px; height:14px; }
+  @media (max-width: 599px){
+    .services-grid{ gap: 10px; }
+    .svc{
+      padding: 18px 18px 16px;
+      cursor: pointer;
+      gap: 0;
+    }
+    .svc:hover{
+      transform: none;
+      box-shadow: none;
+      border-color: var(--line);
+    }
+    .svc.featured:hover{
+      background: var(--ink);
+      border-color: var(--ink);
+    }
+    .svc.accent:hover{ border-color: var(--mist); }
+    .svc-cat{ display:none; }
+    .svc-name{
+      font-size: 23px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 16px;
+    }
+    .svc-name::after{
+      content: "+";
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid currentColor;
+      display:grid;
+      place-items:center;
+      font-family: var(--sans);
+      font-size: 18px;
+      line-height: 1;
+      flex: 0 0 auto;
+      opacity: .75;
+    }
+    .svc.is-open .svc-name::after{ content: "-"; }
+    .svc-desc,
+    .svc-cta{
+      display:none;
+    }
+    .svc.is-open{
+      gap: 12px;
+    }
+    .svc.is-open .svc-desc{
+      display:block;
+      margin-top: 2px;
+    }
+    .svc.is-open .svc-cta{
+      display:flex;
+      margin-top: 2px;
+    }
+    .svc.is-open .arrow{
+      transform: none;
+      background: transparent;
+      color: inherit;
+      border-color: currentColor;
+    }
+  }
 
   .services-foot{
     margin-top: clamp(28px, 4vw, 44px);
@@ -535,6 +597,13 @@
     grid-auto-rows: 180px;
     gap: 10px;
   }
+  @media (max-width: 719px){
+    .gallery-grid{
+      grid-template-columns: 1fr;
+      grid-auto-rows: auto;
+      gap: 16px;
+    }
+  }
   @media (min-width: 720px){
     .gallery-grid{
       grid-template-columns: repeat(4, 1fr);
@@ -554,6 +623,19 @@
   .g-item img{
     width:100%; height:100%; object-fit: cover;
     transition: transform .8s cubic-bezier(.2,.7,.2,1);
+  }
+  @media (max-width: 719px){
+    .g-item{
+      aspect-ratio: 3 / 4;
+      border-radius: 18px;
+    }
+    .g-item.wide{
+      aspect-ratio: 3 / 4;
+    }
+    .g-item img{
+      object-fit: contain;
+      object-position: center;
+    }
   }
   .g-item:hover img{ transform: scale(1.04); }
   .g-item .g-cap{
@@ -1184,10 +1266,6 @@
       </div>
 
       <div class="gallery-grid">
-        <figure class="g-item tall reveal">
-          <img src="fotos/salon-principal.jpg" alt="Puestos de peluquería con espejos y sillones negros" loading="lazy">
-          <figcaption class="g-cap">Salón principal</figcaption>
-        </figure>
         <figure class="g-item reveal">
           <img src="fotos/recogido-flores-rosas.jpg" alt="Recogido con flores rosas" loading="lazy">
           <figcaption class="g-cap">Recogido floral</figcaption>
@@ -1475,6 +1553,49 @@
     });
   }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // mobile service accordions
+  const mobileServices = window.matchMedia('(max-width: 599px)');
+  const services = document.querySelectorAll('.svc');
+
+  services.forEach((svc) => {
+    svc.setAttribute('aria-expanded', 'false');
+    svc.setAttribute('tabindex', '0');
+
+    const toggleService = () => {
+      if (!mobileServices.matches) return;
+      const isOpen = svc.classList.toggle('is-open');
+      svc.setAttribute('aria-expanded', String(isOpen));
+    };
+
+    svc.addEventListener('click', (event) => {
+      if (event.target.closest('a')) return;
+      toggleService();
+    });
+
+    svc.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      toggleService();
+    });
+  });
+
+  const syncServices = () => {
+    services.forEach((svc) => {
+      if (mobileServices.matches) {
+        svc.setAttribute('role', 'button');
+        svc.setAttribute('tabindex', '0');
+        svc.setAttribute('aria-expanded', String(svc.classList.contains('is-open')));
+      } else {
+        svc.classList.remove('is-open');
+        svc.removeAttribute('role');
+        svc.removeAttribute('tabindex');
+        svc.removeAttribute('aria-expanded');
+      }
+    });
+  };
+  syncServices();
+  mobileServices.addEventListener('change', syncServices);
 
   // hours: highlight today + open/closed status (Europe/Madrid)
   const HOURS = {
